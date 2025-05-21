@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+
+    - name: Build binary
+      run: go build -o dummy-server.bin
+
+    - name: Run dummy server and test
+      run: |
+        ./dummy-server.bin &
+        sleep 3
+        curl http://localhost:8080
+        kill $!
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: dummy-server
+        path: ./dummy-server.bin
